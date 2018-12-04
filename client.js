@@ -26,6 +26,7 @@ server.on('data', function(data) {
 		const system_command = spawnSync('../mmcli_linux_tools/SMS/main', ['--send', '--number', number, '--message', msg, '--class', cls]);
 
 		console.log("Terminal output\n" + system_command.output);
+		console.log("Terminal return code: " + system_command.status);
 	}
 	catch(e) {
 		console.log("error with sever information: " + e);
