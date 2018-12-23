@@ -1,6 +1,8 @@
 const net = require('net');
 const express = require('express');
 const app = express();
+const Tools = require('./tools');
+var tools = new Tools;
 
 
 var localServer;
@@ -22,6 +24,55 @@ app.get('/user/:id/transaction', (req, res) => {
 
 //POST
 app.post('/user/:id/transaction/:type/', (req, res)=>{
+	//type = refill, withdraw, transfer
+	var id = req.params.id;
+	var type = req.params.type;
+	var amount = req.body.amount;
+	//var number = req.body.number;
+	var user = new User;
+	try {
+		user.find(id, user, (user)=>{
+			if(!user.is_user()) return false;
+			//TODO check if user has enough balance to complete the transaction
+
+			var transaction = new Transaction;
+			try {
+				transaction.id = tools.generate_random_uuid();
+				transaction.type = type;
+				transaction.user_id = user.id;
+				transaction.details = {"amount":amount, "clients":clients}
+				transaction.create();
+			}
+			catch(error) {
+				throw error;
+			}
+			switch(type) {
+				case "refill":
+				break;
+				
+				case "withdraw":
+				break;
+
+				case "transfer":
+					var clients = [];
+					clients = req.body.phonenumbers;
+					var command = {"clients":clients, "amount":amount, "id":transaction.id};
+					try {
+						localServer.write(JSON.stringify(command));
+						//TODO update user's amount to new amount
+						//TODO create transaction in transaciton listings
+					}
+					catch(error)
+						throw error;
+				break;
+
+				case "default":
+				break;
+			}
+		});
+	}
+	catch(error)
+		throw error;
 });
 app.post('/user/:id/transaction/:type/:service/', (req, res)=>{
 });
