@@ -1,5 +1,7 @@
 const MySql = require('mysql');
 const DB = require('./database');
+const Tools = require('./tools');
+var tools = new Tools;
 module.exports = function User() {
 	var id, amount, phonenumber, auth_key, password;
 
@@ -19,7 +21,7 @@ module.exports = function User() {
 				else {
 					//console.log(results);
 					if(results.length > 0) {
-						var auth_key = "abcde12345";
+						var auth_key = tools.generate_random_uuid();
 						var conn2 = db.getConnection();
 						var query1 = "UPDATE users SET auth_key=? WHERE id=?";
 						conn2.query(query1, [auth_key, results[0].id]);
@@ -46,9 +48,9 @@ module.exports = function User() {
 
 	}
 	
-	this.create = function() {
+	this.create = function(user_callback) {
 		var query = "INSERT IGNORE INTO users SET id=?, phonenumber=?, password=?, amount=?";
-		this.id = "1996";
+		this.id = tools.generate_random_uuid();
 		try {
 			var db = new DB;
 			var conn = db.getConnection();
@@ -57,6 +59,7 @@ module.exports = function User() {
 					throw error;
 				else {
 					//console.log(results);
+					user_callback(results);
 					if(results.insertId) return true;
 				}
 			});
@@ -96,7 +99,7 @@ module.exports = function User() {
 
 	}
 
-	this.update = function() {
+	this.update = function(user_callback) {
 		var query = "UPDATE users SET phonenumber=?, password=?";
 		try {
 			var db = new DB;
@@ -107,6 +110,7 @@ module.exports = function User() {
 				else {
 					//console.log(results);
 					//results.affectedRows
+					user_callback(user);
 					if(results.insertId) return true;
 				}
 			});
@@ -120,4 +124,12 @@ module.exports = function User() {
 	}
 
 	this.del = function() {}
+}
+
+
+function generate_random_uuid() {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
 }

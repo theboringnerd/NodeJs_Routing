@@ -1,4 +1,6 @@
 const DB = require('./database.js');
+const Tools = require('./tools.js');
+var tools = new Tools;
 
 module.exports = function Transaction() {
 	var id, type, service, stat, details, user_id, date;
@@ -8,11 +10,12 @@ module.exports = function Transaction() {
 	}
 
 	this.create = function() {
-		var query = "INSERT IGNORE INTO transactions SET user_id=?, type=?, service=?, details=?";
+		this.id = tools.generate_random_uuid();
+		var query = "INSERT IGNORE INTO transactions SET id=?, user_id=?, type=?, service=?, details=?";
 		try {
 			var db = new DB;
 			var conn = db.getConnection();
-			conn.query(query, [this.user_id, this.type, this.service,JSON.stringify(this.details)], (error, results, fields)=>{
+			conn.query(query, [this.id, this.user_id, this.type, this.service,JSON.stringify(this.details)], (error, results, fields)=>{
 				if(error) {
 					//console.log("t_error: " + error);
 					throw error;

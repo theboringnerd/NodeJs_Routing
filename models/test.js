@@ -1,5 +1,7 @@
 var User = require('./user.js');
 var Transaction = require('./transaction.js');
+var Tools = require('./tools.js');
+var tools = new Tools;
 
 var args = process.argv.slice(2);
 
@@ -159,6 +161,11 @@ switch(args[0]) {
 			break;
 		}
 
+	break;
+
+
+	case "uuid":
+		console.log(tools.generate_random_uuid());
 	break;
 	
 	case "all":

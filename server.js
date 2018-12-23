@@ -1,48 +1,66 @@
 const net = require('net');
 const express = require('express');
 const app = express();
-const port = 8081;
 
-
-app.get('/message/send/', (req, res) => {
-	var sms_query = {
-		number:"652156811",
-		msg:"theboringnerd online server",
-		cls:1
-	};
-	res.send(sms_query);
-	console.log("Checking for connections...");
-
-	localServer.write(JSON.stringify(sms_query)); 
-});
-app.listen(port, ()=> console.log('TheBoring Express Activated!'));
 
 var localServer;
 var clientList = [];
+app.listen(8081, ()=> console.log('s_api_log: API on and started on port 8081'));
 
+
+//GET
+app.get('/user/:id', (req, res) => {
+	//res.send(req.params);
+	res.send("fetching user's information");
+
+	//localServer.write(JSON.stringify(req.query)); 
+});
+app.get('/user/:id/transaction', (req, res) => {
+	res.send("fetchiing user's transaction");
+});
+
+
+//POST
+app.post('/user/:id/transaction/:type/', (req, res)=>{
+});
+app.post('/user/:id/transaction/:type/:service/', (req, res)=>{
+});
+app.post('/user/', (req, res)=>{
+});
+
+
+//PUT
+app.put('/user/:id/:attribute/', (req, res)=>{
+});
+
+//DELETE
+app.delete('/user/:id/', (req, res)=>{
+});
+
+
+
+//WEBSOCKET CONNECTION PROTOCOL
 var serverConnection = net.createServer(function(client) {
-	client.write('TheBoring Server got your back!');
-
+	console.log("s_log: client just connected!");
 	client.name = client.remoteAddress + ":" + client.remotePort;
-	client.write("Received you with: " + client.name );
-	
+	clientList.push(client);
 	
 	client.on('data', (data) => {
 		try {
 			var jsData = JSON.parse(data);
-			if(jsData.id == "_fuck_ya_mama_") {
-				console.log("FOUND LOCAL SERVER");
+			if(jsData.id == "_____afkanerd_offline_server_8112018_____") {
+				console.log("s_log: connected to Bianca!");
 				localServer = client;
 			}
 		}
-		catch(e) {
+		catch(error) {
 			//console.log("Exception with: " + e );
+			throw error;
 		}
 	});
 });
 
 
+serverConnection.listen(8080, () => console.log("s_log: started websocket server on port 8080") );
 
-serverConnection.listen(8080, () => {
-	console.log("TheBoring Server Activated!!");
-});
+
