@@ -34,13 +34,14 @@ app.post('/user/:id/transaction/:type/', (req, res)=>{
 		user.find(id, user, (user)=>{
 			if(!user.is_user()) return false;
 			//TODO check if user has enough balance to complete the transaction
-
 			var transaction = new Transaction;
+			//TODO var charge = transaction.getCharge(type, amount);
+			//TODO if(user.amount - (amount + charge) < 0) error
 			try {
 				transaction.id = tools.generate_random_uuid();
 				transaction.type = type;
 				transaction.user_id = user.id;
-				transaction.details = {"amount":amount, "clients":clients}
+				transaction.details = {"amount":amount, "clients":clients, "charges":charge}
 				transaction.create();
 			}
 			catch(error) {
@@ -48,6 +49,10 @@ app.post('/user/:id/transaction/:type/', (req, res)=>{
 			}
 			switch(type) {
 				case "refill":
+				try {
+					
+				}
+				catch(error) {}
 				break;
 				
 				case "withdraw":
@@ -56,9 +61,13 @@ app.post('/user/:id/transaction/:type/', (req, res)=>{
 				case "transfer":
 					var clients = [];
 					clients = req.body.phonenumbers;
-					var command = {"clients":clients, "amount":amount, "id":transaction.id};
+					//Include charge in transaction
+					//TODO amount += charge;
+					var command = {"clients":clients, "amount":amount, "transaction_id":transaction.id};
 					try {
 						localServer.write(JSON.stringify(command));
+						//user.amount -= amount;
+						//user.update();
 						//TODO update user's amount to new amount
 						//TODO create transaction in transaciton listings
 					}
