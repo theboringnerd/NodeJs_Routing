@@ -2,6 +2,8 @@ const net = require('net');
 const express = require('express');
 const app = express();
 const Tools = require('./tools');
+const Transaction = require('./models/transaction.js');
+const User = require('./models/users.js');
 var tools = new Tools;
 
 
@@ -24,19 +26,19 @@ app.get('/user/:id/transaction', (req, res) => {
 
 //POST
 app.post('/user/:id/transaction/:type/', (req, res)=>{
-	//type = refill, withdraw, transfer
 	var id = req.params.id;
 	var type = req.params.type;
 	var amount = req.body.amount;
-	//var number = req.body.number;
 	var user = new User;
 	try {
 		user.find(id, user, (user)=>{
 			if(!user.is_user()) return false;
-			//TODO check if user has enough balance to complete the transaction
 			var transaction = new Transaction;
-			//TODO var charge = transaction.getCharge(type, amount);
-			//TODO if(user.amount - (amount + charge) < 0) error
+			var charge = transaction.charge(amount);
+			if(user.amount - (amount + charge) < 0) {
+				//Not enough balance
+				return false;
+			}
 			try {
 				transaction.id = tools.generate_random_uuid();
 				transaction.type = type;
@@ -60,16 +62,11 @@ app.post('/user/:id/transaction/:type/', (req, res)=>{
 
 				case "transfer":
 					var clients = [];
-					clients = req.body.phonenumbers;
-					//Include charge in transaction
-					//TODO amount += charge;
+					clients = req.body.phonenumbers;a
+					amount += charge;
 					var command = {"clients":clients, "amount":amount, "transaction_id":transaction.id};
 					try {
 						localServer.write(JSON.stringify(command));
-						//user.amount -= amount;
-						//user.update();
-						//TODO update user's amount to new amount
-						//TODO create transaction in transaciton listings
 					}
 					catch(error)
 						throw error;
@@ -108,7 +105,7 @@ var serverConnection = net.createServer(function(client) {
 	client.on('data', (data) => {
 		try {
 			var jsData = JSON.parse(data);
-			if(jsData.id == "_____afkanerd_offline_server_8112018_____") {
+			if(jsData.id == "_____afkanerd_offline_server_8112018_____") { //_x5
 				console.log("s_log: connected to Bianca!");
 				localServer = client;
 			}

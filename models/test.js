@@ -152,6 +152,14 @@ switch(args[0]) {
 					console.log("\tFalse");
 			break;
 
+			case "charges":
+				var transaction = new Transaction;
+				if(transaction.charge(5001) == 150)
+					console.log("\tTrue");
+				else
+					console.log("\tFalse");
+			break;
+
 			case "all":
 				var transaction = new Transaction;
 			break;

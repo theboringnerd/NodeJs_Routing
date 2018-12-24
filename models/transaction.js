@@ -116,5 +116,16 @@ module.exports = function Transaction() {
 
 	}
 
+
+	this.charge = function(amount) {
+		var ceo = parseInt(amount)/5000;
+		console.log("CEO: " + String(ceo));
+		var target = Math.ceil(ceo) * 5000;
+		console.log("Target: " + String(target));
+		var charge = 0.03 * target;
+		console.log("charge = " + String(charge));
+		return charge;
+	}
+
 	this.del = function() {}
 }
