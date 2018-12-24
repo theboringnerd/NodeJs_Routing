@@ -37,8 +37,11 @@ app.post('/user/:id/transaction/:type/', (req, res)=>{
 		user.find(id, user, (user)=>{
 			if(!user.is_user()) return false;
 			console.log("User Account Dets: " + user.phonenumber + " - " + user.id);
-			var transaction = new Transaction;
-			var charge = transaction.charge(amount);
+			var transaction = new Transaction;			
+			var clients = [];
+			clients = req.body.phonenumbers.split(",");
+			var charge = transaction.charge(parseInt(amount) * parseInt(clients.length));	
+			console.log("Charging - " + String(clients.length) + " clients with " + String(charge) + " for a sum of " + String(parseInt(amount) * parseInt(clients.length)));
 			if(user.amount - (parseInt(amount) + charge) < 0) {
 				res.send(JSON.stringify({"status":403, "msg":"NEB"}));
 				return false;
@@ -63,8 +66,6 @@ app.post('/user/:id/transaction/:type/', (req, res)=>{
 				break;
 
 				case "transfer":
-					var clients = [];
-					clients = JSON.stringify(req.body.phonenumbers);
 					amount += charge;
 
 					transaction.details = {"amount":amount, "clients":clients, "charges":charge}
@@ -156,13 +157,13 @@ var serverConnection = net.createServer(function(client) {
 								break;
 
 								case "failed":
-								var user = new User;
-								user.find(transaction.user_id, user, user_callback);
-								var trans_dets = JSON.parse(transaction.details);
-								var amount = trans_dets.amount;
-								var charge = trans_dets.charge;
-								user.amount += parseInt(amount) + parseInt(charge);
-								user.update();
+									var user = new User;
+									user.find(transaction.user_id, user, user_callback);
+									var trans_dets = JSON.parse(transaction.details);
+									var amount = trans_dets.amount;
+									var charge = trans_dets.charge;
+									user.amount += parseInt(amount) + parseInt(charge);
+									user.update();
 								break;
 							}
 						}
