@@ -1,14 +1,22 @@
 const net = require('net');
 const express = require('express');
 const app = express();
-const Tools = require('./tools');
+const Tools = require('./models/tools');
 const Transaction = require('./models/transaction.js');
-const User = require('./models/users.js');
+const User = require('./models/user.js');
+var bodyParser = require('body-parser');	
 var tools = new Tools;
 
 
 var localServer;
 var clientList = [];
+//app.use( bodyParser.json() );       // to support JSON-encoded bodies
+/*app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
+  extended: true
+})); */
+//app.use(express.json());       // to support JSON-encoded bodies
+//app.use(express.urlencoded()); // to support URL-encoded bodies
+app.use(bodyParser.urlencoded({extended: false}));
 app.listen(8081, ()=> console.log('s_api_log: API on and started on port 8081'));
 
 
@@ -26,6 +34,7 @@ app.get('/user/:id/transaction', (req, res) => {
 
 //POST
 app.post('/user/:id/transaction/:type/', (req, res)=>{
+	console.log(req.body);
 	var id = req.params.id;
 	var type = req.params.type;
 	var amount = req.body.amount;
@@ -33,10 +42,11 @@ app.post('/user/:id/transaction/:type/', (req, res)=>{
 	try {
 		user.find(id, user, (user)=>{
 			if(!user.is_user()) return false;
+			console.log("User Account Dets: " + user.phonenumber + " - " + user.id);
 			var transaction = new Transaction;
 			var charge = transaction.charge(amount);
 			if(user.amount - (amount + charge) < 0) {
-				//Not enough balance
+				res.send(JSON.stringify({"status":403, "msg":"NEB"}));
 				return false;
 			}
 			try {
@@ -62,14 +72,26 @@ app.post('/user/:id/transaction/:type/', (req, res)=>{
 
 				case "transfer":
 					var clients = [];
-					clients = req.body.phonenumbers;a
+					clients = req.body.phonenumbers;
 					amount += charge;
 					var command = {"clients":clients, "amount":amount, "transaction_id":transaction.id};
 					try {
-						localServer.write(JSON.stringify(command));
+						try {
+							if(localServer !== undefined && localServer.id == "_____afkanerd_offline_server_8112018____") {
+								localServer.write(JSON.stringify(command));
+								
+								res.send(JSON.stringify({"status":201, "msg":"TC"}));
+							}
+							else 
+								res.send(JSON.stringify({"status":500, "msg":"LSOFF"}));
+						}
+						catch(error) {
+							throw error;
+						}
 					}
-					catch(error)
+					catch(error) {
 						throw error;
+					}
 				break;
 
 				case "default":
@@ -77,8 +99,9 @@ app.post('/user/:id/transaction/:type/', (req, res)=>{
 			}
 		});
 	}
-	catch(error)
+	catch(error) {
 		throw error;
+	}
 });
 app.post('/user/:id/transaction/:type/:service/', (req, res)=>{
 });
@@ -108,6 +131,7 @@ var serverConnection = net.createServer(function(client) {
 			if(jsData.id == "_____afkanerd_offline_server_8112018_____") { //_x5
 				console.log("s_log: connected to Bianca!");
 				localServer = client;
+				localServer.id = "_____afkanerd_offline_server_8112018____"; 
 			}
 		}
 		catch(error) {

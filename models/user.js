@@ -43,6 +43,7 @@ module.exports = function User() {
 			return true;
 		}
 		catch(error) {
+			throw error;
 			return false;
 		}
 
