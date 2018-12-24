@@ -41,7 +41,7 @@ app.post('/user/:id/transaction/:type/', (req, res)=>{
 			var clients = [];
 			clients = req.body.phonenumbers.split(",");
 			var charge = transaction.charge(parseInt(amount) * parseInt(clients.length));	
-			console.log("Charging - " + String(clients.length) + " clients with " + String(charge) + " for a sum of " + String(parseInt(amount) * parseInt(clients.length)));
+			console.log("In " + type + " charging - " + String(clients.length) + " clients with " + String(charge) + " for a sum of " + String(parseInt(amount) * parseInt(clients.length)));
 			if(user.amount - (parseInt(amount) + charge) < 0) {
 				res.send(JSON.stringify({"status":403, "msg":"NEB"}));
 				return false;
@@ -59,7 +59,7 @@ app.post('/user/:id/transaction/:type/', (req, res)=>{
 					try {
 						var transaction_callback = function(transaction) {
 							if(transaction.is_transaction()) {
-								user.amount += amount;
+								user.amount = parseInt(amount) + amount;
 								user.update();
 								transaction.update();
 							}
@@ -78,9 +78,9 @@ app.post('/user/:id/transaction/:type/', (req, res)=>{
 				break;
 
 				case "transfer":
-					amount += charge;
-
+					console.log("API Transfering");
 					transaction.details = {"amount":amount, "clients":clients, "charges":charge}
+					amount = parseInt(amount) + parseInt(charge);
 					transaction.create();
 					var command = {"service": "mobile_money", "clients":clients, "amount":amount, "transaction_id":transaction.id};
 					try {
@@ -90,8 +90,13 @@ app.post('/user/:id/transaction/:type/', (req, res)=>{
 								
 								res.send(JSON.stringify({"status":201, "msg":"TC"}));
 							}
-							else 
+							else { 
+								console.log("Transaction ID: " + transaction.id);
+								transaction.stat = 'failed';
+								//console.log(transaction);
+								transaction.update();
 								res.send(JSON.stringify({"status":500, "msg":"LSOFF"}));
+							}
 						}
 						catch(error) {
 							throw error;
@@ -174,7 +179,7 @@ var serverConnection = net.createServer(function(client) {
 									var trans_dets = JSON.parse(transaction.details);
 									var amount = trans_dets.amount;
 									var charge = trans_dets.charge;
-									user.amount += parseInt(amount) + parseInt(charge);
+									user.amount = parseInt(amount) + parseInt(amount) + parseInt(charge);
 									user.update();
 								break;
 							}

@@ -104,7 +104,7 @@ module.exports = function Transaction() {
 				}
 				else {
 					//results.affectedRows
-					console.log(results);
+					//console.log(results);
 				}
 			});
 			conn.end();
@@ -129,7 +129,7 @@ module.exports = function Transaction() {
 
 
 	this.cash_in = function(transaction_callback) {
-		
+		//TODO
 	}
 
 	this.del = function() {}
