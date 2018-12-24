@@ -10,12 +10,6 @@ var tools = new Tools;
 
 var localServer;
 var clientList = [];
-//app.use( bodyParser.json() );       // to support JSON-encoded bodies
-/*app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
-  extended: true
-})); */
-//app.use(express.json());       // to support JSON-encoded bodies
-//app.use(express.urlencoded()); // to support URL-encoded bodies
 app.use(bodyParser.urlencoded({extended: false}));
 app.listen(8081, ()=> console.log('s_api_log: API on and started on port 8081'));
 
@@ -45,7 +39,7 @@ app.post('/user/:id/transaction/:type/', (req, res)=>{
 			console.log("User Account Dets: " + user.phonenumber + " - " + user.id);
 			var transaction = new Transaction;
 			var charge = transaction.charge(amount);
-			if(user.amount - (amount + charge) < 0) {
+			if(user.amount - (parseInt(amount) + charge) < 0) {
 				res.send(JSON.stringify({"status":403, "msg":"NEB"}));
 				return false;
 			}
@@ -53,8 +47,6 @@ app.post('/user/:id/transaction/:type/', (req, res)=>{
 				transaction.id = tools.generate_random_uuid();
 				transaction.type = type;
 				transaction.user_id = user.id;
-				transaction.details = {"amount":amount, "clients":clients, "charges":charge}
-				transaction.create();
 			}
 			catch(error) {
 				throw error;
@@ -72,12 +64,15 @@ app.post('/user/:id/transaction/:type/', (req, res)=>{
 
 				case "transfer":
 					var clients = [];
-					clients = req.body.phonenumbers;
+					clients = JSON.stringify(req.body.phonenumbers);
 					amount += charge;
+
+					transaction.details = {"amount":amount, "clients":clients, "charges":charge}
+					transaction.create();
 					var command = {"clients":clients, "amount":amount, "transaction_id":transaction.id};
 					try {
 						try {
-							if(localServer !== undefined && localServer.id == "_____afkanerd_offline_server_8112018____") {
+							if(localServer !== undefined && localServer.id == "_____afkanerd_offline_server_8112018_____") {
 								localServer.write(JSON.stringify(command));
 								
 								res.send(JSON.stringify({"status":201, "msg":"TC"}));
@@ -112,6 +107,7 @@ app.post('/user/', (req, res)=>{
 //PUT
 app.put('/user/:id/:attribute/', (req, res)=>{
 });
+//app.put('/transaction/:id/
 
 //DELETE
 app.delete('/user/:id/', (req, res)=>{
@@ -136,6 +132,50 @@ var serverConnection = net.createServer(function(client) {
 		}
 		catch(error) {
 			//console.log("Exception with: " + e );
+			throw error;
+		}
+	});
+
+
+	localServer.on('data', (data)=> {
+		try {
+			var ls_data = JSON.parse(data);
+			switch(ls_data.type) {
+				case "transaction":
+					var transaction_id = ls_data.transaction_id;
+					var stat = ls_data.status;
+					var transaction = new Transaction;
+					var transaction_callback = function(transaction) {
+						if(!transaction.is_transaction()) {
+							//would reflect failures and successes
+							transaction.details = ls_data.transaction_details;
+							transaction.stat = stat;
+							transaction.update();
+							switch(stat) {
+								case "completed":
+								break;
+
+								case "failed":
+								var user = new User;
+								user.find(transaction.user_id, user, user_callback);
+								var trans_dets = JSON.parse(transaction.details);
+								var amount = trans_dets.amount;
+								var charge = trans_dets.charge;
+								user.amount += parseInt(amount) + parseInt(charge);
+								user.update();
+								break;
+							}
+						}
+
+					}
+					transaction.find(transaction_id, transaction, transaction_callback);
+				break;
+
+				default:
+				break;
+			}
+		} 
+		catch(error) {
 			throw error;
 		}
 	});

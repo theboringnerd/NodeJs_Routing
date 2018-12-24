@@ -100,12 +100,12 @@ module.exports = function User() {
 
 	}
 
-	this.update = function(user_callback) {
-		var query = "UPDATE users SET phonenumber=?, password=?";
+	this.update = function(user, user_callback) {
+		var query = "UPDATE users SET phonenumber=?, password=?, amount=?";
 		try {
 			var db = new DB;
 			var conn = db.getConnection();
-			conn.query(query, [this.phonenumber, this.password], (error, results, fields)=>{
+			conn.query(query, [this.phonenumber, this.password, this.amount], (error, results, fields)=>{
 				if(error)
 					throw error;
 				else {

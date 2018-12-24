@@ -41,10 +41,11 @@ switch(args[0]) {
 				console.log("t_log: updating user");
 				var user = new User;
 				//user.find("0", user, user_callback);
-				user.id = "0";
+				user.id = "dcafc974-f59a-4c99-bf73-3c213ee4e360";
+				user.amount = "1000";
 				user.phonenumber = "111111111";
 				user.password = "u_asshole";
-				if(user.update()) 
+				if(user.update(user, user_callback)) 
 					console.log("\tTrue");
 				else
 					console.log("\tFalse");
