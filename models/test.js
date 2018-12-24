@@ -161,6 +161,13 @@ switch(args[0]) {
 					console.log("\tFalse");
 			break;
 
+			case "cash_in":
+				var transaction = new Transaction;
+				transaction.user_id = "0";
+				transaction.amount = "100";
+				transaction.cash_in(transaction_callback);
+			break;
+
 			case "all":
 				var transaction = new Transaction;
 			break;

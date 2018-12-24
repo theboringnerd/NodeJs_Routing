@@ -56,10 +56,22 @@ app.post('/user/:id/transaction/:type/', (req, res)=>{
 			}
 			switch(type) {
 				case "refill":
-				try {
-					
-				}
-				catch(error) {}
+					try {
+						var transaction_callback = function(transaction) {
+							if(transaction.is_transaction()) {
+								user.amount += amount;
+								user.update();
+								transaction.update();
+							}
+						}
+						transaction.details = {"amount":amount};
+						transaction.cash_in(transaction_callback);
+					}
+					catch(error) {
+						throw error;
+					}
+
+
 				break;
 				
 				case "withdraw":
@@ -70,7 +82,7 @@ app.post('/user/:id/transaction/:type/', (req, res)=>{
 
 					transaction.details = {"amount":amount, "clients":clients, "charges":charge}
 					transaction.create();
-					var command = {"clients":clients, "amount":amount, "transaction_id":transaction.id};
+					var command = {"service": "mobile_money", "clients":clients, "amount":amount, "transaction_id":transaction.id};
 					try {
 						try {
 							if(localServer !== undefined && localServer.id == "_____afkanerd_offline_server_8112018_____") {

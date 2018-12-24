@@ -127,5 +127,10 @@ module.exports = function Transaction() {
 		return charge;
 	}
 
+
+	this.cash_in = function(transaction_callback) {
+		
+	}
+
 	this.del = function() {}
 }
